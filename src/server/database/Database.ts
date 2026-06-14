@@ -1,4 +1,3 @@
-import {PostgreSQL} from './PostgreSQL';
 import {SQLite} from './SQLite';
 import {IDatabase} from './IDatabase';
 import {LocalFilesystem} from './LocalFilesystem';
@@ -13,6 +12,8 @@ export class Database {
     if (!Database.instance) {
       if (process.env.POSTGRES_HOST !== undefined) {
         console.log('Connecting to Postgres database.');
+        // Loaded lazily so the optional `pg` dependency is only required when Postgres is actually used.
+        const {PostgreSQL} = require('./PostgreSQL') as typeof import('./PostgreSQL');
         Database.instance = new PostgreSQL();
       } else if (process.env.LOCAL_FS_DB !== undefined) {
         console.log('Connecting to local filesystem database.');

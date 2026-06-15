@@ -12,4 +12,7 @@ export enum BoardName {
   AMAZONIS = 'amazonis p.',
   TERRA_CIMMERIA = 't. cimmeria',
   HOLLANDIA = 'Hollandia',
+
+  // One hex-ring larger than the standard maps (91 spaces). Distinct from AMAZONIS ('amazonis p.').
+  AMAZONIS_PLANITIA = 'amazonis planitia',
 }

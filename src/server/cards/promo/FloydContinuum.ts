@@ -38,10 +38,10 @@ export class FloydContinuum extends Card implements IProjectCard, IActionCard {
   public action(player: IPlayer) {
     let count = 0;
     const game = player.game;
-    if (game.getTemperature() === constants.MAX_TEMPERATURE) {
+    if (game.getTemperature() === game.globalParameterMaximums.temperature) {
       count++;
     }
-    if (game.getOxygenLevel() === constants.MAX_OXYGEN_LEVEL) {
+    if (game.getOxygenLevel() === game.globalParameterMaximums.oxygen) {
       count++;
     }
     if (!game.canAddOcean()) {

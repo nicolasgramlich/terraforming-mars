@@ -7,7 +7,7 @@ import {CardResource} from '../../../common/CardResource';
 import {AddResourcesToCard} from '../../deferredActions/AddResourcesToCard';
 import {digit} from '../Options';
 import {ICard} from '../ICard';
-import {MAX_OXYGEN_LEVEL, MAX_VENUS_SCALE} from '../../../common/constants';
+import {MAX_VENUS_SCALE} from '../../../common/constants';
 import {OrOptions} from '../../inputs/OrOptions';
 import {SelectOption} from '../../inputs/SelectOption';
 import {ICorporationCard} from '../corporation/ICorporationCard';
@@ -48,7 +48,7 @@ export class RobinHaulings extends CorporationCard implements ICorporationCard {
   }
 
   private canRaiseOxygen(player: IPlayer) {
-    return player.game.getOxygenLevel() < MAX_OXYGEN_LEVEL && player.canAfford({cost: 0, tr: {oxygen: 1}});
+    return player.game.getOxygenLevel() < player.game.globalParameterMaximums.oxygen && player.canAfford({cost: 0, tr: {oxygen: 1}});
   }
 
   public canAct(player: IPlayer) {

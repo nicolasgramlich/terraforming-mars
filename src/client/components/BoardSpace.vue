@@ -1,5 +1,5 @@
 <template>
-  <div v-if="space !== undefined" :class="mainClass" :data_space_id="space.id">
+  <div v-if="space !== undefined" :class="mainClass" :style="positionStyle" :data_space_id="space.id">
     <BoardSpaceTile
       :space="space"
       :aresExtension="aresExtension"
@@ -8,7 +8,7 @@
     <div class="board-space-text" v-if="text" v-i18n>{{ text }}</div>
     <Bonus :bonus="space.bonus" v-if="showBonus"/>
     <template v-if="tileView === 'coords'">
-      <div class="board-space-coords">{{ getSpaceName(space.id) }}</div>
+      <div class="board-space-coords">{{ coords !== undefined ? coords : getSpaceName(space.id) }}</div>
     </template>
     <template v-if="tileView === 'show'">
       <div :class="playerColorCss" v-if="space.color !== undefined"></div>
@@ -59,6 +59,18 @@ export default defineComponent({
     tileView: {
       type: String as () => TileView,
       required: true,
+    },
+    // Inline position (margin) computed from the space's x/y by the parent Board. Colony spaces
+    // omit this and are positioned by their `board-space-<id>` class instead.
+    positionStyle: {
+      type: Object as () => Record<string, string> | undefined,
+      default: undefined,
+    },
+    // Coordinate label (e.g. 'A1') for the "coords" tile view, computed from x/y by the parent
+    // Board so it works for any board size. When absent, falls back to the static name mapping.
+    coords: {
+      type: String,
+      default: undefined,
     },
   },
   data() {

@@ -20,7 +20,7 @@
           <BoardSpace v-if="hasSpace(SpaceName.VENERA_BASE)" :space="getSpace(SpaceName.VENERA_BASE)" text="Venera Base" :tileView="tileView"/>
         </div>
 
-        <div class="global-numbers">
+        <div class="global-numbers" :class="{'global-numbers--large': isLargeBoard}">
             <div class="global-numbers-temperature">
                 <div :class="getScaleCSS(lvl)" v-for="(lvl, idx) in getValuesForParameter('temperature')" :key="idx">{{ lvl.strValue }}</div>
             </div>
@@ -34,11 +34,11 @@
             </div>
 
             <div class="global-numbers-oceans">
-              <span v-if="oceans_count === constants.MAX_OCEAN_TILES">
+              <span v-if="oceans_count === globalParameterMaximums.oceans">
                 <img width="26" src="assets/misc/circle-checkmark.png" class="board-ocean-checkmark" :alt="$t('Completed!')">
               </span>
               <span v-else>
-                {{oceans_count}}/{{constants.MAX_OCEAN_TILES}}
+                {{oceans_count}}/{{globalParameterMaximums.oceans}}
               </span>
             </div>
 
@@ -73,11 +73,13 @@
             </div>
         </div>
 
-        <div class="board" id="main_board">
+        <div class="board" :class="{'board--large': isLargeBoard}" id="main_board">
             <BoardSpace
               v-for="curSpace in getAllSpacesOnMars()"
               :key="curSpace.id"
               :space="curSpace"
+              :positionStyle="marsSpaceStyle(curSpace)"
+              :coords="marsSpaceCoords(curSpace)"
               :aresExtension="expansions.ares"
               :tileView="tileView"
               data-test="board-space"
@@ -353,6 +355,8 @@
 <script lang="ts">
 import {defineComponent} from 'vue';
 import * as constants from '@/common/constants';
+import {getGlobalParameterMaximums} from '@/common/boards/GlobalParameterMaximums';
+import {marsTileLabel} from '@/common/boards/spaces';
 import BoardSpace from '@/client/components/BoardSpace.vue';
 import {AresData} from '@/common/ares/AresData';
 import {SpaceModel} from '@/common/models/SpaceModel';
@@ -433,6 +437,25 @@ export default defineComponent({
         return s.spaceType !== SpaceType.COLONY;
       });
     },
+    // Position of an on-Mars space, computed from its x/y so any board size (the standard
+    // 9-row maps, or the larger 11-row Amazonis Planitia) lays out from one formula. Each row is
+    // 41px tall; each tile within a row is 49px apart; rows away from the middle (widest) row are
+    // indented by half a tile. Colony spaces (x === -1) are positioned by their CSS class instead.
+    marsSpaceStyle(space: SpaceModel): Record<string, string> | undefined {
+      if (space.spaceType === SpaceType.COLONY || space.x < 0) {
+        return undefined;
+      }
+      const geometry = this.marsGeometry;
+      const indexInRow = space.x - (geometry.minXByRow[space.y] ?? 0);
+      const top = 34 + 41 * space.y;
+      const left = 6 + Math.round(24.5 * Math.abs(space.y - geometry.middleRow)) + 49 * indexInRow;
+      return {margin: `${top}px 0 0 ${left}px`};
+    },
+    // Coordinate label (e.g. 'A1') for the "coords" tile view, computed from the space's position
+    // so every on-Mars space is labelled on any board size.
+    marsSpaceCoords(space: SpaceModel): string {
+      return marsTileLabel(space.x, space.y, this.marsGeometry.middleRow);
+    },
     hasSpace(spaceId: SpaceId): boolean {
       return this.spaceMap.has(spaceId);
     },
@@ -457,13 +480,13 @@ export default defineComponent({
       switch (targetParameter) {
       case 'oxygen':
         startValue = constants.MIN_OXYGEN_LEVEL;
-        endValue = constants.MAX_OXYGEN_LEVEL;
+        endValue = this.globalParameterMaximums.oxygen;
         step = 1;
         curValue = this.oxygen_level;
         break;
       case 'temperature':
         startValue = constants.MIN_TEMPERATURE;
-        endValue = constants.MAX_TEMPERATURE;
+        endValue = this.globalParameterMaximums.temperature;
         step = 2;
         curValue = this.temperature;
         break;
@@ -494,18 +517,44 @@ export default defineComponent({
     },
     oceansValue() {
       const oceans_count = this.oceans_count || 0;
-      const leftover = constants.MAX_OCEAN_TILES - oceans_count;
+      const leftover = this.globalParameterMaximums.oceans - oceans_count;
       if (leftover === 0) {
         return '<img width="26" src="assets/misc/circle-checkmark.png" class="board-ocean-checkmark" :alt="$t(\'Completed!\')">';
       } else {
-        return `${oceans_count}/${constants.MAX_OCEAN_TILES}`;
+        return `${oceans_count}/${this.globalParameterMaximums.oceans}`;
       }
     },
     getGameBoardClassName(): string {
-      return this.expansions.venus ? 'board-cont board-with-venus' : 'board-cont board-without-venus';
+      const css = this.expansions.venus ? 'board-cont board-with-venus' : 'board-cont board-without-venus';
+      return this.isLargeBoard ? css + ' board-cont--large' : css;
     },
   },
   computed: {
+    // The per-map maximum values of the global parameters (the larger maps raise them).
+    globalParameterMaximums() {
+      return getGlobalParameterMaximums(this.boardName);
+    },
+    // Derived from the spaces themselves so it works for any symmetric hex map. `middleRow` is the
+    // widest row (y === maxY / 2); `minXByRow` is the smallest x in each row, used to find a tile's
+    // index within its row.
+    marsGeometry(): {middleRow: number, minXByRow: Record<number, number>} {
+      const minXByRow: Record<number, number> = {};
+      let maxY = 0;
+      for (const space of this.spaces) {
+        if (space.spaceType === SpaceType.COLONY || space.x < 0) {
+          continue;
+        }
+        maxY = Math.max(maxY, space.y);
+        if (minXByRow[space.y] === undefined || space.x < minXByRow[space.y]) {
+          minXByRow[space.y] = space.x;
+        }
+      }
+      return {middleRow: maxY / 2, minXByRow};
+    },
+    // The larger maps (more than the standard nine rows) need a bigger board container.
+    isLargeBoard(): boolean {
+      return this.marsGeometry.middleRow > 4;
+    },
     BoardName(): typeof BoardName {
       return BoardName;
     },

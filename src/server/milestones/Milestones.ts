@@ -57,6 +57,7 @@ import {Purifier} from './Purifier';
 import {VSpacefarer} from './VSpacefarer';
 import {Agronomist} from './Agronomist';
 import {Merchant} from './modular/Merchant';
+import {Merchant3} from './modular/Merchant3';
 import {MAManifest} from '../ma/MAManifest';
 import {MilestoneName} from '../../common/ma/MilestoneName';
 import {BoardName} from '../../common/boards/BoardName';
@@ -107,6 +108,7 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     'Martian': {Factory: Martian, compatibility: 'pathfinders'},
     'Mayor': {Factory: Mayor, random: 'both'},
     'Merchant': {Factory: Merchant, random: 'modular'},
+    'Merchant3': {Factory: Merchant3, random: 'modular'},
     'Metallurgist': {Factory: Metallurgist, random: 'modular'},
     'Minimalist': {Factory: Minimalist},
     'Networker': {Factory: Networker, compatibility: 'ares'},
@@ -157,6 +159,7 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     [BoardName.VASTITAS_BOREALIS_NOVA]: ['Agronomist', 'V. Spacefarer', 'Geologist', 'Engineer', 'Farmer'],
     [BoardName.TERRA_CIMMERIA_NOVA]: ['Planetologist', 'Architect', 'Coastguard', 'C. Forester', 'Fundraiser'],
     [BoardName.HOLLANDIA]: [],
+    [BoardName.AMAZONIS_PLANITIA]: ['Terran5', 'Landshaper', 'Merchant3', 'Sponsor', 'Lobbyist'],
   },
   expansions: {
     venus: ['Hoverlord'],

@@ -8,6 +8,19 @@
   }
 }
 
+// Larger maps (e.g. Amazonis Planitia, one hex-ring bigger than the standard maps) extend beyond
+// the standard board. The board terrain image is set on `.board-cont--large` (like the standard
+// maps set it on `.board-cont`); the inner board is transparent so the terrain shows through the
+// hexes. Each hex keeps a faint outline as an alignment aid while the art is still being tuned.
+.board--large {
+  width: 620px;
+  height: 560px;
+
+  .board-space {
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  }
+}
+
 .board-cont {
   display: inline-block;
   vertical-align: top;
@@ -22,6 +35,27 @@
 
 .board-without-venus{
   background: url(./assets/board/mars-without-venus.png) no-repeat;
+}
+
+// The larger maps use their own (bigger) board image. This overrides the standard mars.png set by
+// .board-with-venus / .board-without-venus above; the container is sized to the image (720x680).
+// The base image includes the Venus track (the with-Venus variant).
+.board-cont--large {
+  // 720px matches the background image; the extra ~20px gives the dynamic content of the optional
+  // modules (e.g. the Ares hazard markers and the off-Mars colony spaces, which sit near the right
+  // edge) room so it is not clipped.
+  width: 740px;
+  height: 680px;
+  background-image: url(./assets/board/mars-large.png);
+}
+
+// Without the Venus track, the larger maps use a Venus-less board image (mirrors
+// .board-without-venus for the standard board). The combined selector is more specific than
+// .board-cont--large, so it wins when both classes are on the container.
+// TODO: switch this URL to ./assets/board/mars-large-without-venus.png once that art exists;
+// using mars-large.png as a placeholder for now.
+.board-cont--large.board-without-venus {
+  background-image: url(./assets/board/mars-large.png);
 }
 
 // // Not used yet.
@@ -103,6 +137,12 @@
 
 .board-space-bonus--heat {
   background: url(./assets/resources/heat.png) no-repeat;
+  background-size: 16px;
+}
+
+// "Choose any standard resource" bonus (Amazonis Planitia); reuses the wild-resource icon.
+.board-space-bonus--wild {
+  background: url(./assets/resources/wild.png) no-repeat;
   background-size: 16px;
 }
 
@@ -424,7 +464,7 @@
     width: 88px;
   }
 
-  &.board-space-69, &.board-space-70, &.board-space-71, &.board-space-72, &.board-space-73, &.board-space-75, &.board-space-76, &.board-space-77, &.board-space-78 {
+  &.board-space-903, &.board-space-904, &.board-space-905, &.board-space-906, &.board-space-907, &.board-space-908, &.board-space-909, &.board-space-910, &.board-space-911 {
     .board-space-text {
       margin-top: -15px;
     }

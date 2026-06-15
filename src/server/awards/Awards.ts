@@ -52,6 +52,8 @@ import {Collector} from './modular/Collector';
 import {Politician} from './modular/Politician';
 import {Manufacturer} from './modular/Manufacturer';
 import {Incorporator} from './modular/Incorporator';
+import {Innovator} from './modular/Innovator';
+import {Physicist} from './modular/Physicist';
 import {Rugged} from './Rugged';
 import {BoardName} from '../../common/boards/BoardName';
 import {AwardName} from '../../common/ma/AwardName';
@@ -89,6 +91,7 @@ export const awardManifest: MAManifest<AwardName, IAward> = {
     'Full Moon': {Factory: FullMoon, compatibility: 'moon'},
     'Highlander': {Factory: Highlander, random: 'modular'},
     'Incorporator': {Factory: Incorporator, random: 'both'},
+    'Innovator': {Factory: Innovator, random: 'modular'},
     'Industrialist': {Factory: Industrialist, random: 'both'},
     'Investor': {Factory: Investor, random: 'modular'},
     'Kingpin': {Factory: Kingpin, compatibility: 'underworld'},
@@ -100,6 +103,7 @@ export const awardManifest: MAManifest<AwardName, IAward> = {
     'Metropolist': {Factory: Metropolist, random: 'modular'},
     'Miner': {Factory: Miner, random: 'both'},
     'Mogul': {Factory: Mogul, random: 'modular'},
+    'Physicist': {Factory: Physicist, random: 'modular'},
     'Naturalist': {Factory: Naturalist},
     'Politician': {Factory: Politician, compatibility: 'turmoil', random: 'modular'},
     'Promoter': {Factory: Promoter, random: 'both'},
@@ -130,6 +134,7 @@ export const awardManifest: MAManifest<AwardName, IAward> = {
     [BoardName.VASTITAS_BOREALIS_NOVA]: ['Traveller', 'Landscaper', 'Highlander', 'Promoter', 'Blacksmith'],
     [BoardName.TERRA_CIMMERIA_NOVA]: ['Electrician', 'Founder', 'Mogul', 'A. Zoologist', 'Forecaster'],
     [BoardName.HOLLANDIA]: [],
+    [BoardName.AMAZONIS_PLANITIA]: ['Collector', 'Innovator', 'Constructor', 'Manufacturer', 'Physicist'],
   },
   expansions: {
     venus: ['Venuphile'],

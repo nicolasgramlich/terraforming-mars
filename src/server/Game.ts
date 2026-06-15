@@ -1,6 +1,8 @@
 import * as constants from '../common/constants';
 import {BeginnerCorporation} from './cards/corporation/BeginnerCorporation';
 import {Board} from './boards/Board';
+import {GlobalParameterMaximums, getGlobalParameterMaximums} from '../common/boards/GlobalParameterMaximums';
+import {GlobalParameterThreshold, GlobalParameterTracks, getGlobalParameterTracks} from '../common/boards/GlobalParameterTracks';
 import {CardName} from '../common/cards/CardName';
 import {ClaimedMilestone, serializeClaimedMilestones, deserializeClaimedMilestones} from './milestones/ClaimedMilestone';
 import {ColonyDealer} from './colonies/ColonyDealer';
@@ -73,6 +75,7 @@ import {BuildColony} from './deferredActions/BuildColony';
 import {newInitialDraft, newPreludeDraft, newCEOsDraft, newStandardDraft} from './Draft';
 import {partition, sum, toID, toName} from '../common/utils/utils';
 import {OrOptions} from './inputs/OrOptions';
+import {SelectResource} from './inputs/SelectResource';
 import {SelectOption} from './inputs/SelectOption';
 import {SelectSpace} from './inputs/SelectSpace';
 import {maybeRenamedMilestone} from '../common/ma/MilestoneName';
@@ -561,8 +564,8 @@ export class Game implements IGame, Logger {
   }
 
   public marsIsTerraformed(): boolean {
-    const oxygenMaxed = this.oxygenLevel >= constants.MAX_OXYGEN_LEVEL;
-    const temperatureMaxed = this.temperature >= constants.MAX_TEMPERATURE;
+    const oxygenMaxed = this.oxygenLevel >= this.globalParameterMaximums.oxygen;
+    const temperatureMaxed = this.temperature >= this.globalParameterMaximums.temperature;
     const oceansMaxed = !this.canAddOcean();
     let globalParametersMaxed = oxygenMaxed && temperatureMaxed && oceansMaxed;
     const venusMaxed = this.getVenusScaleLevel() === constants.MAX_VENUS_SCALE;
@@ -929,7 +932,7 @@ export class Game implements IGame, Logger {
     const orOptions = new OrOptions()
       .setTitle('Select action for World Government Terraforming')
       .setButtonLabel('Confirm');
-    if (this.getTemperature() < constants.MAX_TEMPERATURE) {
+    if (this.getTemperature() < this.globalParameterMaximums.temperature) {
       orOptions.options.push(
         new SelectOption('Increase temperature', 'Increase')
           .annotate(GlobalParameter.TEMPERATURE)
@@ -940,7 +943,7 @@ export class Game implements IGame, Logger {
           }),
       );
     }
-    if (this.getOxygenLevel() < constants.MAX_OXYGEN_LEVEL) {
+    if (this.getOxygenLevel() < this.globalParameterMaximums.oxygen) {
       orOptions.options.push(
         new SelectOption('Increase oxygen', 'Increase')
           .annotate(GlobalParameter.OXYGEN)
@@ -1198,7 +1201,7 @@ export class Game implements IGame, Logger {
   }
 
   public increaseOxygenLevel(player: IPlayer, increments: -2 | -1 | 1 | 2): void {
-    if (this.oxygenLevel >= constants.MAX_OXYGEN_LEVEL) {
+    if (this.oxygenLevel >= this.globalParameterMaximums.oxygen) {
       return undefined;
     }
 
@@ -1209,19 +1212,20 @@ export class Game implements IGame, Logger {
     }
 
     // Literal typing makes |increments| a const
-    const steps = Math.min(increments, constants.MAX_OXYGEN_LEVEL - this.oxygenLevel);
+    const steps = Math.min(increments, this.globalParameterMaximums.oxygen - this.oxygenLevel);
+    const newOxygenLevel = this.oxygenLevel + steps;
 
     if (this.phase !== Phase.SOLAR) {
       TurmoilHandler.onGlobalParameterIncrease(player, GlobalParameter.OXYGEN, steps);
       player.onGlobalParameterIncrease(GlobalParameter.OXYGEN, steps);
       player.increaseTerraformRating(steps);
     }
-    if (this.oxygenLevel < constants.OXYGEN_LEVEL_FOR_TEMPERATURE_BONUS &&
-      this.oxygenLevel + steps >= constants.OXYGEN_LEVEL_FOR_TEMPERATURE_BONUS) {
-      this.increaseTemperature(player, 1);
-    }
 
-    this.oxygenLevel += steps;
+    // Track bonuses (a card, a temperature step at 8%/12%, ...) vary per map. The temperature step
+    // applies even during the solar phase; a card bonus is skipped there (see helper).
+    this.grantGlobalParameterTrackBonuses(player, this.globalParameterTracks.oxygen, this.oxygenLevel, newOxygenLevel);
+
+    this.oxygenLevel = newOxygenLevel;
     this.maybeLogMarsIsTerraformed();
 
     AresHandler.ifAres(this, (aresData) => {
@@ -1296,7 +1300,7 @@ export class Game implements IGame, Logger {
   }
 
   public increaseTemperature(player: IPlayer, increments: -2 | -1 | 1 | 2 | 3): undefined {
-    if (this.temperature >= constants.MAX_TEMPERATURE) {
+    if (this.temperature >= this.globalParameterMaximums.temperature) {
       return undefined;
     }
 
@@ -1306,19 +1310,14 @@ export class Game implements IGame, Logger {
     }
 
     // Literal typing makes |increments| a const
-    const steps = Math.min(increments, (constants.MAX_TEMPERATURE - this.temperature) / 2);
+    const steps = Math.min(increments, (this.globalParameterMaximums.temperature - this.temperature) / 2);
+    const newTemperature = this.temperature + steps * 2;
+
+    // Track bonuses (heat/plant production, an ocean at 0C, ...) vary per map. The ocean bonus
+    // applies even during the solar phase; the production bonuses are skipped there (see helper).
+    this.grantGlobalParameterTrackBonuses(player, this.globalParameterTracks.temperature, this.temperature, newTemperature);
 
     if (this.phase !== Phase.SOLAR) {
-      // BONUS FOR HEAT PRODUCTION AT -20 and -24
-      if (this.temperature < constants.TEMPERATURE_BONUS_FOR_HEAT_1 &&
-        this.temperature + steps * 2 >= constants.TEMPERATURE_BONUS_FOR_HEAT_1) {
-        player.production.add(Resource.HEAT, 1, {log: true});
-      }
-      if (this.temperature < constants.TEMPERATURE_BONUS_FOR_HEAT_2 &&
-        this.temperature + steps * 2 >= constants.TEMPERATURE_BONUS_FOR_HEAT_2) {
-        player.production.add(Resource.HEAT, 1, {log: true});
-      }
-
       for (const card of player.playedCards) {
         card.onGlobalParameterIncrease?.(player, GlobalParameter.TEMPERATURE, steps);
       }
@@ -1327,12 +1326,7 @@ export class Game implements IGame, Logger {
       player.increaseTerraformRating(steps);
     }
 
-    // BONUS FOR OCEAN TILE AT 0
-    if (this.temperature < constants.TEMPERATURE_FOR_OCEAN_BONUS && this.temperature + steps * 2 >= constants.TEMPERATURE_FOR_OCEAN_BONUS) {
-      this.defer(new PlaceOceanTile(player, {title: 'Select space for ocean from temperature increase'}));
-    }
-
-    this.temperature += steps * 2;
+    this.temperature = newTemperature;
     this.maybeLogMarsIsTerraformed();
 
     AresHandler.ifAres(this, (aresData) => {
@@ -1344,6 +1338,48 @@ export class Game implements IGame, Logger {
 
   public getTemperature(): number {
     return this.temperature;
+  }
+
+  public get globalParameterMaximums(): GlobalParameterMaximums {
+    return getGlobalParameterMaximums(this.gameOptions.boardName);
+  }
+
+  public get globalParameterTracks(): GlobalParameterTracks {
+    return getGlobalParameterTracks(this.gameOptions.boardName);
+  }
+
+  // Grants the track bonuses crossed when a global parameter rises from |from| to |to|.
+  // |production|/|card| are player benefits and are skipped in the solar (World Government) phase;
+  // |ocean|/|temperature| are global effects that apply regardless and may cascade further.
+  private grantGlobalParameterTrackBonuses(
+    player: IPlayer,
+    thresholds: ReadonlyArray<GlobalParameterThreshold>,
+    from: number,
+    to: number): void {
+    const grantPlayerBonuses = this.phase !== Phase.SOLAR;
+    for (const {value, bonus} of thresholds) {
+      if (from >= value || to < value) {
+        continue;
+      }
+      switch (bonus.type) {
+      case 'production':
+        if (grantPlayerBonuses) {
+          player.production.add(bonus.resource, bonus.amount, {log: true});
+        }
+        break;
+      case 'card':
+        if (grantPlayerBonuses) {
+          player.drawCard(bonus.amount);
+        }
+        break;
+      case 'ocean':
+        this.defer(new PlaceOceanTile(player, {title: 'Select space for ocean from temperature increase'}));
+        break;
+      case 'temperature':
+        this.increaseTemperature(player, 1);
+        break;
+      }
+    }
   }
 
   public getGeneration(): number {
@@ -1526,7 +1562,7 @@ export class Game implements IGame, Logger {
       break;
     case SpaceBonus.TEMPERATURE:
     case SpaceBonus.TEMPERATURE_4MC:
-      if (this.getTemperature() < constants.MAX_TEMPERATURE) {
+      if (this.getTemperature() < this.globalParameterMaximums.temperature) {
         const cost = spaceBonus === SpaceBonus.TEMPERATURE ? constants.VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST : constants.VASTITAS_BOREALIS_NOVA_BONUS_TEMPERATURE_COST;
         this.defer(new SelectPaymentDeferred(
           player,
@@ -1550,6 +1586,17 @@ export class Game implements IGame, Logger {
         constants.TERRA_CIMMERIA_COLONY_COST,
         {title: 'Select how to pay for building a colony'}))
         .andThen(() => this.defer(new BuildColony(player)));
+      break;
+    case SpaceBonus.WILD:
+      // The player chooses any one standard resource; each occurrence is an independent choice.
+      for (let i = 0; i < count; i++) {
+        this.defer(new SimpleDeferredAction(player, () =>
+          new SelectResource('Select a resource to gain from the placement bonus')
+            .andThen((resource) => {
+              player.stock.add(resource, 1, {log: true});
+              return undefined;
+            })));
+      }
       break;
     default:
       throw new Error('Unhandled space bonus ' + spaceBonus + '. Report this exact error, please.');
@@ -1581,12 +1628,12 @@ export class Game implements IGame, Logger {
   }
 
   public canAddOcean(): boolean {
-    return this.board.getOceanSpaces().length < constants.MAX_OCEAN_TILES;
+    return this.board.getOceanSpaces().length < this.globalParameterMaximums.oceans;
   }
 
   public canRemoveOcean(): boolean {
     const count = this.board.getOceanSpaces().length;
-    return count > 0 && count < constants.MAX_OCEAN_TILES;
+    return count > 0 && count < this.globalParameterMaximums.oceans;
   }
 
   public addOcean(player: IPlayer, space: Space): void {

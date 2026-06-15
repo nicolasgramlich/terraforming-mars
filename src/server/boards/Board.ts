@@ -22,13 +22,31 @@ export type SpaceCosts = {
 };
 
 /**
+ * Off-Mars space ids that were renumbered into the '9xx' range so the on-Mars board could grow
+ * beyond 63 spaces. Saved games store the old ids, so colony spaces are translated on
+ * deserialization. The translation is only applied to COLONY spaces: on the larger maps these old
+ * ids ('69'..'78') are now legitimate on-Mars board spaces, so on-Mars spaces must be left alone.
+ */
+const SPACE_ID_RENAMES = new Map<string, SpaceId>([
+  ['69', '903'], // Stanford Torus
+  ['70', '904'], // Luna Metropolis
+  ['71', '905'], // Dawn City
+  ['72', '906'], // Stratopolis
+  ['73', '907'], // Maxwell Base
+  ['75', '908'], // Ceres Spaceport
+  ['76', '909'], // Dyson Screens
+  ['77', '910'], // Lunar Embassy
+  ['78', '911'], // Venera Base
+]);
+
+/**
  * A representation of any hex board. This is normally Mars (Tharsis, Hellas, Elysium) but can also be The Moon.
  *
  * It also includes additional spaces, known as Colonies, that are not adjacent to other spaces.
  */
 export abstract class Board {
-  private maxX: number = 0;
-  private maxY: number = 0;
+  protected maxX: number = 0;
+  protected maxY: number = 0;
   private map: Map<SpaceId, Space> = new Map();
   public volcanicSpaceIds: ReadonlyArray<SpaceId>;
 
@@ -357,8 +375,11 @@ export abstract class Board {
     const player = this.findPlayer(players, serialized.player);
     const excavator = this.findPlayer(players, serialized.excavator);
     const coOwner = this.findPlayer(players, serialized.coOwner);
+    const id = serialized.spaceType === SpaceType.COLONY ?
+      (SPACE_ID_RENAMES.get(serialized.id) ?? serialized.id) :
+      serialized.id;
     const space: Space = {
-      id: serialized.id,
+      id: id,
       spaceType: serialized.spaceType,
       bonus: serialized.bonus,
       x: serialized.x,

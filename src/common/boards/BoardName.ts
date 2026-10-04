@@ -15,4 +15,7 @@ export enum BoardName {
 
   // One hex-ring larger than the standard maps (91 spaces). Distinct from AMAZONIS ('amazonis p.').
   AMAZONIS_PLANITIA = 'amazonis planitia',
+
+  // An oval map of 175 spaces, with finer-grained temperature and oxygen tracks.
+  GIGA = 'giga',
 }

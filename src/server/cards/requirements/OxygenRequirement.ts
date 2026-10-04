@@ -11,7 +11,9 @@ import {MAX_OXYGEN_LEVEL, MIN_OXYGEN_LEVEL} from '../../../common/constants';
 export class OxygenRequirement extends GlobalParameterRequirement {
   public readonly type = RequirementType.OXYGEN;
   protected readonly parameter = GlobalParameter.OXYGEN;
-  protected override readonly scale = 1;
+  protected override scale(player: IPlayer): number {
+    return player.game.globalParameterSteps.oxygen;
+  }
 
   constructor(options?: Partial<Options>) {
     const count = options?.count ?? 1;

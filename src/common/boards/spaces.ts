@@ -119,14 +119,15 @@ const ROW_LETTERS = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
  * The coordinate label of an on-Mars space (e.g. 'A1', 'F11'), computed from its position so it
  * works for any board size — including the larger maps, which the static `nameMapping` above does
  * not cover. `middleRow` is the index of the widest row (maxY / 2); the leftmost x in a row is
- * `abs(y - middleRow)`, so a tile's column within its row is `x - abs(y - middleRow)`. Off-board
- * spaces (colonies, x < 0) have no coordinate.
+ * `abs(y - middleRow)`, so a tile's column within its row is `x - abs(y - middleRow)`. Maps that
+ * are not hexagons pass the row's leftmost x as `rowStartX`. Off-board spaces (colonies, x < 0)
+ * have no coordinate.
  */
-export function marsTileLabel(x: number, y: number, middleRow: number): string {
+export function marsTileLabel(x: number, y: number, middleRow: number, rowStartX: number = Math.abs(y - middleRow)): string {
   if (x < 0 || y < 0 || y >= ROW_LETTERS.length) {
     return 'n/a';
   }
-  const column = x - Math.abs(y - middleRow) + 1;
+  const column = x - rowStartX + 1;
   return ROW_LETTERS[y] + column;
 }
 
@@ -140,6 +141,8 @@ export function spaceLabel(id: SpaceId, spaces: ReadonlyArray<{id: SpaceId, x: n
   if (space === undefined || isMoonSpace(id) || space.x < 0) {
     return getSpaceName(id);
   }
-  const maxY = Math.max(...spaces.filter((s) => isMarsSpace(s.id)).map((s) => s.y));
-  return marsTileLabel(space.x, space.y, maxY / 2);
+  const marsSpaces = spaces.filter((s) => isMarsSpace(s.id));
+  const maxY = Math.max(...marsSpaces.map((s) => s.y));
+  const rowStartX = Math.min(...marsSpaces.filter((s) => s.y === space.y).map((s) => s.x));
+  return marsTileLabel(space.x, space.y, maxY / 2, rowStartX);
 }

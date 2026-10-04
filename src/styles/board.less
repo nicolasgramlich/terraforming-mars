@@ -56,6 +56,28 @@
   background-image: url(./assets/board/mars-large-without-venus.png);
 }
 
+// Giga is an oval of 11 rows up to 19 tiles wide. It has no board art yet, so the container is a
+// plain panel sized to the tiles, with the parameter tracks laid out as straight strips (see
+// `.global-numbers--giga`) and the off-Mars spaces in a row along the bottom.
+// TODO(giga): add the board art and tune these positions to it.
+.board-cont--giga {
+  position: relative;
+  width: 1010px;
+  height: 760px;
+  background: #1a1a1a;
+  border-radius: 12px;
+}
+
+.board--giga {
+  width: 945px;
+  height: 505px;
+  margin: 60px 0 0 30px;
+
+  .board-space {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  }
+}
+
 .board-legend {
   position: absolute;
   margin: -67px 0 0 -100px;
@@ -146,6 +168,25 @@
   background-position: left, 23px;
   width: 35px;
   height: 24px;
+}
+
+// TODO(giga): replace the text with a cost image like hellas-ocean-cost.png once the art exists.
+.board-space-bonus--bonusocean5mc {
+  background: url(./assets/tiles/ocean.png) no-repeat left;
+  background-size: 21px;
+  width: 35px;
+  height: 24px;
+
+  &::after {
+    content: '-5';
+    position: absolute;
+    left: 22px;
+    top: 5px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fc0;
+    text-shadow: 0 0 2px #000;
+  }
 }
 
 .board-space-bonus--bonustemperature {
@@ -564,6 +605,11 @@
 .board-space-type-land-volcanic {
   background-image: url(./assets/hex_volcanic.png);
   background-color: #8303;
+}
+
+// TODO(giga): replace the tint with a snowflake once the art exists.
+.board-space-type-land-polar {
+  background-color: #cef5;
 }
 
 .board-space-type-land-noctis {

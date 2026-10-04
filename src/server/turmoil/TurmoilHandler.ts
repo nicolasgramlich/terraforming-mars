@@ -106,26 +106,28 @@ export class TurmoilHandler {
     const tracks = player.game.globalParameterTracks;
 
     if (tr.oxygen !== undefined) {
-      const availableSteps = player.game.globalParameterMaximums.oxygen - player.game.getOxygenLevel();
+      const stepSize = player.game.globalParameterSteps.oxygen;
+      const availableSteps = Math.floor((player.game.globalParameterMaximums.oxygen - player.game.getOxygenLevel()) / stepSize);
       const steps = Math.min(availableSteps, tr.oxygen);
       total = total + steps;
       // Crossing an oxygen threshold whose bonus is a temperature step cascades into a TR bump.
       const from = player.game.getOxygenLevel();
       for (const {value, bonus} of tracks.oxygen) {
-        if (bonus.type === 'temperature' && from < value && from + steps >= value) {
+        if (bonus.type === 'temperature' && from < value && from + (steps * stepSize) >= value) {
           tr.temperature = (tr.temperature ?? 0) + 1;
         }
       }
     }
 
     if (tr.temperature !== undefined) {
-      const availableSteps = Math.floor((player.game.globalParameterMaximums.temperature - player.game.getTemperature()) / 2);
+      const stepSize = player.game.globalParameterSteps.temperature;
+      const availableSteps = Math.floor((player.game.globalParameterMaximums.temperature - player.game.getTemperature()) / stepSize);
       const steps = Math.min(availableSteps, tr.temperature);
       total = total + steps;
       // Crossing a temperature threshold whose bonus is an ocean cascades into a TR bump.
       const from = player.game.getTemperature();
       for (const {value, bonus} of tracks.temperature) {
-        if (bonus.type === 'ocean' && from < value && from + (steps * 2) >= value) {
+        if (bonus.type === 'ocean' && from < value && from + (steps * stepSize) >= value) {
           tr.oceans = (tr.oceans ?? 0) + 1;
         }
       }

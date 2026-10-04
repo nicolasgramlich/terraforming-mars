@@ -394,6 +394,48 @@
     28 84px 525px 35deg,
     30 103px 548px 42deg;
 
+  // Giga's tracks are straight strips: oxygen above the map, temperature below it, then Venus
+  // and the ocean count. The markers flow in a row, so nothing is placed by hand.
+  // TODO(giga): revisit once the board art exists.
+  &.global-numbers--giga {
+    margin: 0;
+
+    .global-numbers-oxygen,
+    .global-numbers-temperature,
+    .global-numbers-venus {
+      position: absolute;
+      display: flex;
+      // Values are listed from the maximum down; show them rising from left to right.
+      flex-direction: row-reverse;
+      gap: 2px;
+      font-size: 11px;
+      color: #ccc;
+
+      .global-numbers-value {
+        position: static;
+        margin: 0;
+        transform: none;
+        width: 22px;
+        height: 22px;
+        line-height: 22px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
+    .global-numbers-oxygen { margin: 22px 0 0 30px; }
+    .global-numbers-temperature { margin: 580px 0 0 30px; }
+    .global-numbers-venus { margin: 620px 0 0 30px; }
+    .global-numbers-oceans { margin: 612px 0 0 880px; }
+
+    .global-ares-erosions-icon { margin: 616px 0 0 720px; }
+    .global-ares-erosions-val { margin: 622px 0 0 744px; }
+    .global-ares-remove-dust-storms-icon { margin: 522px 0 0 730px; }
+    .global-ares-remove-dust-storms-val { margin: 622px 0 0 836px; }
+    // The severe-hazard markers normally point at a value on the round tracks. Park them by the
+    // ocean count until the tracks have art.
+    .global-ares-severe-erosions { margin: 600px 0 0 600px !important; transform: scale(.4, .4) !important; }
+    .global-ares-severe-dust-storms { margin: 600px 0 0 640px !important; transform: scale(.4, .4) !important; }
+  }
+
   &.global-numbers--large {
     .global-numbers-oxygen {
       each(@oxygen-vals-large, .(@v) { .pin-and-rotate(@v); });

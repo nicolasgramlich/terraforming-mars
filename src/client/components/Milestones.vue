@@ -31,7 +31,9 @@
 <script lang="ts">
 
 import {defineComponent} from 'vue';
-import {MAX_MILESTONES, MILESTONE_COST} from '@/common/constants';
+import {MILESTONE_COST} from '@/common/constants';
+import {BoardName} from '@/common/boards/BoardName';
+import {getMilestoneAwardLimits} from '@/common/boards/MilestoneAwardLimits';
 import Milestone from '@/client/components/Milestone.vue';
 import {ClaimedMilestoneModel} from '@/common/models/ClaimedMilestoneModel';
 import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
@@ -42,6 +44,11 @@ export default defineComponent({
     milestones: {
       type: Array as () => ReadonlyArray<ClaimedMilestoneModel>,
       required: true,
+    },
+    // The map decides how many milestones may be claimed.
+    boardName: {
+      type: String as () => BoardName,
+      default: BoardName.THARSIS,
     },
     showScores: {
       type: Boolean,
@@ -54,7 +61,7 @@ export default defineComponent({
   },
   data() {
     return {
-      showMilestoneDetails: (this.milestones.filter((milestone) => milestone.playerName).length === MAX_MILESTONES ? false : this.preferences?.show_milestone_details),
+      showMilestoneDetails: (this.milestones.filter((milestone) => milestone.playerName).length === getMilestoneAwardLimits(this.boardName).milestones ? false : this.preferences?.show_milestone_details),
       showDescription: false,
     };
   },
@@ -71,7 +78,7 @@ export default defineComponent({
     },
     getAvailableMilestoneSpots(): Array<number> {
       const count = this.milestones.filter((milestone) => milestone.playerName).length;
-      return Array(MAX_MILESTONES - count).fill(MILESTONE_COST);
+      return Array(getMilestoneAwardLimits(this.boardName).milestones - count).fill(MILESTONE_COST);
     },
     isLearnerModeOn(): boolean {
       return this.preferences.learner_mode;

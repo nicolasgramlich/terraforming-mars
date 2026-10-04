@@ -18,10 +18,12 @@ function colonySpace(id: SpaceId): Space {
 export const STANDARD_TILES_PER_ROW: ReadonlyArray<number> = [5, 6, 7, 8, 9, 8, 7, 6, 5];
 
 export class BoardBuilder {
-  // This builder lays out a symmetric hexagonal map. The shape is described by `tilesPerRow`,
-  // which must have an odd length and widen monotonically to a single widest middle row before
-  // narrowing again (e.g. the standard [5,6,7,8,9,8,7,6,5], or one ring larger
-  // [6,7,8,9,10,11,10,9,8,7,6]).
+  // This builder lays out a symmetric map of centred rows. The shape is described by `tilesPerRow`,
+  // which must have an odd length and widen to a single widest middle row before narrowing again
+  // (e.g. the standard [5,6,7,8,9,8,7,6,5], or one ring larger [6,7,8,9,10,11,10,9,8,7,6]).
+  //
+  // A hexagon grows by one tile per row. A row may also be shorter than that by an even number of
+  // tiles, which trims it equally on both sides (e.g. Giga's oval starts [12,15,16,...]).
   //
   // "Son I am able, " she said "though you scare me."
   // "Watch, " said I
@@ -33,6 +35,7 @@ export class BoardBuilder {
   private spaces: Array<Space> = [];
   private unshufflableSpaces: Array<number> = [];
   private volcanicSpaces: Array<number> = [];
+  private polarSpaces: Array<number> = [];
   private gameOptions: GameOptions;
   private rng: Random;
   private readonly tilesPerRow: ReadonlyArray<number>;
@@ -73,6 +76,14 @@ export class BoardBuilder {
     return this;
   }
 
+  /** A land space in a polar region. */
+  polar(...bonus: Array<SpaceBonus>): this {
+    this.spaceTypes.push(SpaceType.LAND);
+    this.polarSpaces.push(this.spaceTypes.length - 1);
+    this.bonuses.push(bonus);
+    return this;
+  }
+
   restricted(): this {
     this.spaceTypes.push(SpaceType.RESTRICTED);
     this.bonuses.push([]);
@@ -104,9 +115,17 @@ export class BoardBuilder {
     const idOffset = this.spaces.length + 1;
     let idx = 0;
 
+    const middleRow = (tilesPerRow.length - 1) / 2;
+
     for (let row = 0; row < tilesPerRow.length; row++) {
       const tilesInThisRow = tilesPerRow[row];
-      const xOffset = maxTiles - tilesInThisRow;
+      // In a hexagon a row |distance| rows from the middle has |maxTiles - distance| tiles, and
+      // starts at x === distance. A row trimmed by a tile on each side starts one further in.
+      const distance = Math.abs(row - middleRow);
+      const xOffset = (maxTiles + distance - tilesInThisRow) / 2;
+      if (!Number.isInteger(xOffset)) {
+        throw new Error(`Row ${row} cannot be centred: it has ${tilesInThisRow} tiles`);
+      }
       for (let i = 0; i < tilesInThisRow; i++) {
         const spaceId = idx + idOffset;
         const xCoordinate = xOffset + i;
@@ -119,6 +138,9 @@ export class BoardBuilder {
         };
         if (this.volcanicSpaces.includes(idx)) {
           space.volcanic = true;
+        }
+        if (this.polarSpaces.includes(idx)) {
+          space.polar = true;
         }
         this.spaces.push(space);
         idx++;
@@ -161,7 +183,7 @@ export class BoardBuilder {
   // Shuffle the ocean spaces and bonus spaces. But protect the land spaces supplied by
   // |lands| so that those IDs most definitely have land spaces.
   public shuffle(rng: Random) {
-    const preservedSpaces = [...this.unshufflableSpaces, ...this.volcanicSpaces];
+    const preservedSpaces = [...this.unshufflableSpaces, ...this.volcanicSpaces, ...this.polarSpaces];
     preservedSpaces.sort((a, b) => a - b); // TODO(kberg): this can be removed.
     preservingShuffle(this.spaceTypes, preservedSpaces, rng);
     preservingShuffle(this.bonuses, preservedSpaces, rng);

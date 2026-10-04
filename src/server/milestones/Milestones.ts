@@ -59,6 +59,10 @@ import {VSpacefarer} from './VSpacefarer';
 import {Agronomist} from './Agronomist';
 import {Merchant} from './modular/Merchant';
 import {Merchant3} from './modular/Merchant3';
+import {Gardener5} from './modular/Gardener5';
+import {Mayor5} from './modular/Mayor5';
+import {RimSettler5} from './modular/RimSettler5';
+import {PolarExplorer5} from './modular/PolarExplorer5';
 import {MAManifest} from '../ma/MAManifest';
 import {MilestoneName} from '../../common/ma/MilestoneName';
 import {BoardName} from '../../common/boards/BoardName';
@@ -95,6 +99,7 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     'Fundraiser': {Factory: Fundraiser, random: 'modular'},
     'Gambler': {Factory: Gambler},
     'Gardener': {Factory: Gardener, random: 'both'},
+    'Gardener5': {Factory: Gardener5},
     'Generalist': {Factory: Generalist, random: 'both'},
     'Geologist': {Factory: Geologist, random: 'modular'},
     'Hoverlord': {Factory: Hoverlord, compatibility: 'venus'},
@@ -108,6 +113,7 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     'Lunarchitect': {Factory: Lunarchitect, compatibility: 'moon'},
     'Martian': {Factory: Martian, compatibility: 'pathfinders'},
     'Mayor': {Factory: Mayor, random: 'both'},
+    'Mayor5': {Factory: Mayor5},
     'Merchant': {Factory: Merchant, random: 'modular'},
     'Merchant3': {Factory: Merchant3, random: 'modular'},
     'Metallurgist': {Factory: Metallurgist, random: 'modular'},
@@ -120,10 +126,12 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     'Planetologist': {Factory: Planetologist, compatibility: 'venus', random: 'modular'},
     'Planner': {Factory: Planner, random: 'both'},
     'Polar Explorer': {Factory: PolarExplorer},
+    'Polar Explorer5': {Factory: PolarExplorer5},
     'Producer': {Factory: Producer, random: 'modular'},
     'Purifier': {Factory: Purifier, compatibility: 'ares'},
     'Researcher': {Factory: Researcher, random: 'modular'},
     'Rim Settler': {Factory: RimSettler, random: 'both'},
+    'Rim Settler5': {Factory: RimSettler5},
     'Risktaker': {Factory: Risktaker, compatibility: 'underworld'},
     'Smith': {Factory: Smith},
     'Spacefarer': {Factory: Spacefarer},
@@ -161,6 +169,12 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     [BoardName.TERRA_CIMMERIA_NOVA]: ['Planetologist', 'Architect', 'Coastguard', 'C. Forester', 'Fundraiser'],
     [BoardName.HOLLANDIA]: [],
     [BoardName.AMAZONIS_PLANITIA]: ['Terran5', 'Landshaper', 'Merchant3', 'Sponsor', 'Lobbyist'],
+    // Giga asks for 5, not 3, for Gardener, Mayor, Rim Settler and Polar Explorer.
+    [BoardName.GIGA]: [
+      'Terraformer', 'Builder', 'Gardener5', 'Planner', 'Rim Settler5',
+      'Mayor5', 'Energizer', 'Tactician', 'Ecologist', 'Legend',
+      'Specialist', 'Generalist', 'Tycoon', 'Diversifier', 'Polar Explorer5',
+    ],
   },
   expansions: {
     venus: ['Hoverlord'],

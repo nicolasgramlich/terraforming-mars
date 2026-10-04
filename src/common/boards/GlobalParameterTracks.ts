@@ -59,8 +59,17 @@ const AMAZONIS_PLANITIA: GlobalParameterTracks = {
   ],
 };
 
+// Giga keeps the classic temperature bonuses, and moves the oxygen one to 6%.
+const GIGA: GlobalParameterTracks = {
+  temperature: STANDARD.temperature,
+  oxygen: [
+    {value: 6, bonus: {type: 'temperature'}},
+  ],
+};
+
 const BY_BOARD: Partial<Record<BoardName, GlobalParameterTracks>> = {
   [BoardName.AMAZONIS_PLANITIA]: AMAZONIS_PLANITIA,
+  [BoardName.GIGA]: GIGA,
 };
 
 export function getGlobalParameterTracks(boardName: BoardName): GlobalParameterTracks {

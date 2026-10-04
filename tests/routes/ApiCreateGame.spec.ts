@@ -108,6 +108,7 @@ describe('ApiCreateGame', () => {
       BoardName.TERRA_CIMMERIA,
       BoardName.HOLLANDIA,
       BoardName.AMAZONIS_PLANITIA,
+      BoardName.GIGA,
     ]);
   });
 

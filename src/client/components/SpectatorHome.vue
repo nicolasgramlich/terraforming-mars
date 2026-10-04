@@ -84,6 +84,10 @@ import {HomeMixin} from '@/client/mixins/HomeMixin';
 export default defineComponent({
   name: 'SpectatorHome',
   mixins: [HomeMixin],
+  // Lets card components show requirements as this game's map enforces them.
+  provide() {
+    return {boardName: this.spectator.game.gameOptions.boardName};
+  },
   props: {
     spectator: {
       type: Object as () => SpectatorModel,

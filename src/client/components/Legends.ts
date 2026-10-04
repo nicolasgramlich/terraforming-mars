@@ -26,4 +26,5 @@ export const LEGENDS = {
   ],
   [BoardName.HOLLANDIA]: [],
   [BoardName.AMAZONIS_PLANITIA]: [],
+  [BoardName.GIGA]: [],
 } satisfies Record<BoardName, Array<Key>>;

@@ -30,7 +30,8 @@ import {Tag} from '../common/cards/Tag';
 import {Tile} from './Tile';
 import {Logger} from './logs/Logger';
 import {GlobalParameter} from '../common/GlobalParameter';
-import {GlobalParameterMaximums} from '../common/boards/GlobalParameterMaximums';
+import {MilestoneAwardLimits} from '../common/boards/MilestoneAwardLimits';
+import {GlobalParameterMaximums, GlobalParameterSteps} from '../common/boards/GlobalParameterMaximums';
 import {GlobalParameterTracks} from '../common/boards/GlobalParameterTracks';
 import {UnderworldData} from './underworld/UnderworldData';
 import {OrOptions} from './inputs/OrOptions';
@@ -74,6 +75,8 @@ export interface IGame extends Logger {
   board: MarsBoard;
   /** The maximum values of the Mars global parameters (oceans, temperature, oxygen) for this map. */
   readonly globalParameterMaximums: GlobalParameterMaximums;
+  readonly globalParameterSteps: GlobalParameterSteps;
+  readonly milestoneAwardLimits: MilestoneAwardLimits;
   readonly globalParameterTracks: GlobalParameterTracks;
   activePlayer: IPlayer;
   claimedMilestones: Array<ClaimedMilestone>;

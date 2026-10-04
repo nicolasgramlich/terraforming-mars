@@ -135,6 +135,12 @@ export const awardManifest: MAManifest<AwardName, IAward> = {
     [BoardName.TERRA_CIMMERIA_NOVA]: ['Electrician', 'Founder', 'Mogul', 'A. Zoologist', 'Forecaster'],
     [BoardName.HOLLANDIA]: [],
     [BoardName.AMAZONIS_PLANITIA]: ['Collector', 'Innovator', 'Constructor', 'Manufacturer', 'Physicist'],
+    // The printed board's fifteenth award is Venuphile, which the Venus expansion adds below.
+    [BoardName.GIGA]: [
+      'Landlord', 'Banker', 'Thermalist', 'Miner', 'Scientist',
+      'Cultivator', 'Estate Dealer', 'Celebrity', 'Benefactor', 'Space Baron',
+      'Contractor', 'Excentric', 'Magnate', 'Desert Settler',
+    ],
   },
   expansions: {
     venus: ['Venuphile'],

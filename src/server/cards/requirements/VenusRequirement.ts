@@ -11,7 +11,9 @@ import {Options} from './CardRequirement';
 export class VenusRequirement extends GlobalParameterRequirement {
   public readonly type = RequirementType.VENUS;
   protected readonly parameter = GlobalParameter.VENUS;
-  protected override readonly scale = 2;
+  protected override scale(): number {
+    return 2;
+  }
 
   constructor(options?: Partial<Options>) {
     const count = options?.count ?? 1;

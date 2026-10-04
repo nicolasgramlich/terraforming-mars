@@ -13,11 +13,17 @@ import {IProjectCard} from '../IProjectCard';
 export abstract class InequalityRequirement extends CardRequirement {
   public abstract getScore(player: IPlayer, card: IProjectCard): number;
 
+  /** The value to compare against. Normally `count`, but a map may scale it. */
+  public threshold(_player: IPlayer): number {
+    return this.count;
+  }
+
   public satisfies(player: IPlayer, card: IProjectCard): boolean {
     const score = this.getScore(player, card);
+    const threshold = this.threshold(player);
     if (this.max) {
-      return score <= this.count;
+      return score <= threshold;
     }
-    return score >= this.count;
+    return score >= threshold;
   }
 }

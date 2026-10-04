@@ -29,6 +29,9 @@ export class ExcavateSpacesDeferred extends RunNTimes<void> {
           ignorePlacementRestrictions: this.ignorePlacementRestrictions,
         });
       if (spaces.length === 0) {
+        if (!UnderworldExpansion.hasTokens(this.player.game)) {
+          return this.next();
+        }
         const undergroundResource = UnderworldExpansion.drawExcavationToken(this.player.game);
         this.player.game.log('${0} excavated ${1} from the draw pile', (b) =>
           b.player(this.player).undergroundToken(undergroundResource));

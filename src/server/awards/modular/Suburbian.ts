@@ -1,19 +1,7 @@
 import {IPlayer} from '../../IPlayer';
 import {IAward} from '../IAward';
 import {hazardSeverity} from '../../../common/AresTileType';
-
-// This could probably be computed with board.getAdjacentSpaces().length < 6.
-const EDGE_IDS = new Set([
-  '03', '04', '05', '06', '07',
-  '08', '13',
-  '14', '20',
-  '21', '28',
-  '29', '37',
-  '38', '45',
-  '46', '52',
-  '53', '58',
-  '59', '60', '61', '62', '63',
-]);
+import {SpaceType} from '../../../common/boards/SpaceType';
 
 // Is this exactly the same as Edgedancer?
 export class Suburbian implements IAward {
@@ -22,7 +10,10 @@ export class Suburbian implements IAward {
   public getScore(player: IPlayer): number {
     const board = player.game.board;
     return board.spaces.filter((space) => {
-      if (!EDGE_IDS.has(space.id)) {
+      // A space on the edge of the (hexagonal) map has fewer than six neighbours. Computing this
+      // from adjacency keeps the award correct on any board size, including the larger maps.
+      // Off-Mars colony spaces report no neighbours, so they are excluded explicitly.
+      if (space.spaceType === SpaceType.COLONY || board.getAdjacentSpaces(space).length >= 6) {
         return false;
       }
       if (space.tile === undefined || hazardSeverity(space.tile.tileType) !== 'none') {

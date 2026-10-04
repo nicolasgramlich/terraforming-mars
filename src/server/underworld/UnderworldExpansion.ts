@@ -158,6 +158,10 @@ export class UnderworldExpansion {
     if (!this.canIdentify(space)) {
       return false;
     }
+    // Every token is on the board or claimed, so there is nothing left to identify this space with.
+    if (!this.hasTokens(game)) {
+      return false;
+    }
 
     const undergroundResource = this.drawExcavationToken(game);
     space.undergroundResources = undergroundResource;
@@ -192,10 +196,17 @@ export class UnderworldExpansion {
    */
   public static excavatableSpaces(player: IPlayer, options?: {ignorePlacementRestrictions?: boolean, ignoreTunnelingLoophole?: boolean}) {
     const board = player.game.board;
+    // Without the expansion there is no pile at all, which is not the same as an empty one.
+    const hasTokens = player.game.gameOptions.underworldExpansion !== true || this.hasTokens(player.game);
 
     // Compute any space that any player can excavate.
     const anyExcavatableSpaces = board.spaces.filter((space) => {
       if (space.spaceType === SpaceType.COLONY || space.spaceType === SpaceType.RESTRICTED) {
+        return false;
+      }
+
+      // An unidentified space needs a token from the pile to be excavated.
+      if (space.undergroundResources === undefined && !hasTokens) {
         return false;
       }
 
@@ -600,6 +611,14 @@ export class UnderworldExpansion {
         break;
       }
     });
+  }
+
+  /**
+   * Returns true when the draw pile has a token left. The pile can run dry on a map with as many
+   * spaces as there are tokens, once nearly all of it is identified.
+   */
+  public static hasTokens(game: IGame): boolean {
+    return (game.underworldData?.tokens.length ?? 0) > 0;
   }
 
   public static drawExcavationToken(game: IGame): UndergroundResourceToken {

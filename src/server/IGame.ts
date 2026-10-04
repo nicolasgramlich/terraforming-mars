@@ -30,6 +30,8 @@ import {Tag} from '../common/cards/Tag';
 import {Tile} from './Tile';
 import {Logger} from './logs/Logger';
 import {GlobalParameter} from '../common/GlobalParameter';
+import {GlobalParameterMaximums} from '../common/boards/GlobalParameterMaximums';
+import {GlobalParameterTracks} from '../common/boards/GlobalParameterTracks';
 import {UnderworldData} from './underworld/UnderworldData';
 import {OrOptions} from './inputs/OrOptions';
 import {IStandardProjectCard} from './cards/IStandardProjectCard';
@@ -70,6 +72,9 @@ export interface IGame extends Logger {
   ceoDeck: CeoDeck;
   corporationDeck: CorporationDeck;
   board: MarsBoard;
+  /** The maximum values of the Mars global parameters (oceans, temperature, oxygen) for this map. */
+  readonly globalParameterMaximums: GlobalParameterMaximums;
+  readonly globalParameterTracks: GlobalParameterTracks;
   activePlayer: IPlayer;
   claimedMilestones: Array<ClaimedMilestone>;
   milestones: Array<IMilestone>;

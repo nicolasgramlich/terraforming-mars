@@ -23,7 +23,7 @@
             <svg width="20" height="14" viewBox="0 0 28 38">
               <circle cx="14" cy="19" r="16" stroke="black" stroke-width="1" transform="translate(0, 2)" :fill="isMoonSpace(data.value) ? 'gray' : '#b7410e'" />
             </svg>
-            {{ getSpaceName(data.value) }}
+            {{ spaceLabel(data.value) }}
         </span>
         <span v-else-if="data.type === LogMessageDataType.CARDS" v-html="cardsToHtml(data)"></span>
 
@@ -49,7 +49,8 @@ import {tileTypeToString} from '@/common/TileType';
 import {Log} from '@/common/logs/Log';
 import {getCard} from '@/client/cards/ClientCardManifest';
 import {undergroundResourceTokenDescription} from '@/common/underworld/UndergroundResourceToken';
-import {isMoonSpace, getSpaceName} from '@/common/boards/spaces';
+import {isMoonSpace, spaceLabel} from '@/common/boards/spaces';
+import {SpaceId} from '@/common/Types';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {gameLocaleToIntlLocale} from '@/client/utils/LocaleUtils';
 import {range} from '@/common/utils/utils';
@@ -79,6 +80,9 @@ export default defineComponent({
     },
   },
   methods: {
+    spaceLabel(id: SpaceId): string {
+      return spaceLabel(id, this.viewModel.game.spaces);
+    },
     cardToHtml(data: LogMessageData & {type: LogMessageDataType.CARD, value: CardName}) {
       return this.innerCardToHtml(data.value, data.attrs);
     },
@@ -151,9 +155,6 @@ export default defineComponent({
     },
     LogMessageDataType(): typeof LogMessageDataType {
       return LogMessageDataType;
-    },
-    getSpaceName(): typeof getSpaceName {
-      return getSpaceName;
     },
     isMoonSpace(): typeof isMoonSpace {
       return isMoonSpace;

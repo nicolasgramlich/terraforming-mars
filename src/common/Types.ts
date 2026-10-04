@@ -4,7 +4,11 @@ export type SpectatorId = `s${string}`;
 export type ParticipantId = PlayerId | SpectatorId;
 type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
 type TwoDigits = `${Digit}${Digit}`;
-export type SpaceId = `${TwoDigits}` | `m${TwoDigits}`;
+type ThreeDigits = `${Digit}${Digit}${Digit}`;
+// Mars spaces are two or three digit ids. Two digits ('03'..'63') cover the standard 61-space
+// maps; three digits give room for larger maps and for off-Mars spaces in the '9xx' range. The
+// Moon uses an 'm' prefix with two digits.
+export type SpaceId = `${TwoDigits}` | `${ThreeDigits}` | `m${TwoDigits}`;
 export type Named<T> = {name: T};
 
 export function isPlayerId(object: any): object is PlayerId {
@@ -20,7 +24,7 @@ export function isSpectatorId(object: string): object is SpectatorId {
 }
 
 export function isSpaceId(object: string): object is SpaceId {
-  return /^m?[0-9][0-9]$/.test(object);
+  return /^([0-9]{2,3}|m[0-9]{2})$/.test(object);
 }
 
 export function safeCast<T>(object: any, tester: (object: any) => object is T) {

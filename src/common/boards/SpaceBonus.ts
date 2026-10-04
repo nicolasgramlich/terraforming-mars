@@ -33,6 +33,9 @@ export enum SpaceBonus {
     // Terra Cimmeria Nova-specific
     COLONY, // 17
     TEMPERATURE_4MC, // 18, Vastitas Borealis Nova-specific, costs 4MC not 3
+
+    // Amazonis Planitia-specific: the player chooses any one standard resource.
+    WILD, // 19
 }
 
 const TO_STRING_MAP = {
@@ -55,6 +58,7 @@ const TO_STRING_MAP = {
   [SpaceBonus.DELEGATE]: 'Delegate',
   [SpaceBonus.COLONY]: 'Colony',
   [SpaceBonus.TEMPERATURE_4MC]: 'Temperature',
+  [SpaceBonus.WILD]: 'Any resource',
 } satisfies Record<SpaceBonus, string>;
 
 export namespace SpaceBonus {

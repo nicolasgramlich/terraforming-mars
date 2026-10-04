@@ -259,43 +259,74 @@
   margin: 362px 0 0 350px;
 }
 
-.board-space-69 {
+// Off-Mars space havens / colonies (renumbered from '69'..'78' into the '9xx' range).
+.board-space-903 { // Stanford Torus
   margin: 16px 0 0 112px;
 }
 
-.board-space-70 {
+.board-space-904 { // Luna Metropolis
   margin: 59px 0 0 534px;
 }
 
 
-.board-space-71 {
+.board-space-905 { // Dawn City
   margin: 17px 0 0 464px;
 }
 
-.board-space-72 {
+.board-space-906 { // Stratopolis
   margin: 133px 0 0 570px;
 }
 
-.board-space-73 {
+.board-space-907 { // Maxwell Base
   margin: -13px 0 0 388px;
 }
 
-.board-space-74 {
+.board-space-74 { // Martian Transhipment Station (unused)
   margin: 334px 0 0 617px;
 }
 
-.board-space-75 {
+.board-space-908 { // Ceres Spaceport
   margin: 405px 0 0 624px;
 }
 
-.board-space-76 {
+.board-space-909 { // Dyson Screens
   margin: 473px 0 0 615px;
 }
 
-.board-space-77 {
+.board-space-910 { // Lunar Embassy
   margin: 527px 0 0 588px;
 }
 
-.board-space-78 {
+.board-space-911 { // Venera Base
   margin: 2px 0 0 610px;
+}
+
+// Larger maps (Amazonis Planitia) use the bigger board image, so a few off-Mars spaces shift to
+// stay clear of it. Scoped to `.board-cont--large` (set by the Board component) so the standard
+// maps are unaffected; only the differences from the rules above are listed.
+.board-cont--large {
+  .board-space-904 { // Luna Metropolis — moved right
+    margin: 59px 0 0 614px;
+  }
+  .board-space-905 { // Dawn City — moved right
+    margin: 17px 0 0 544px;
+  }
+  .board-space-906 { // Stratopolis — moved right
+    margin: 133px 0 0 650px;
+  }
+  .board-space-907 { // Maxwell Base — moved right
+    margin: -13px 0 0 468px;
+  }
+  .board-space-908 { // Ceres Spaceport — moved down + right, clear of the temperature track
+    margin: 508px 0 0 694px;
+  }
+  .board-space-909 { // Dyson Screens — moved down + right, clear of the temperature track
+    margin: 579px 0 0 660px;
+  }
+  .board-space-910 { // Lunar Embassy — moved down + right, clear of the temperature track
+    margin: 642px 0 0 603px;
+  }
+  .board-space-911 { // Venera Base — aligned to Maxwell Base's row
+    margin: -13px 0 0 610px;
+  }
 }

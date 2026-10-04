@@ -16,6 +16,9 @@ export class IdentifySpacesDeferred extends RunNTimes<Space | UndergroundResourc
     this.player.defer(() => {
       const identifiableSpaces = UnderworldExpansion.identifiableSpaces(this.player);
       if (identifiableSpaces.length === 0) {
+        if (!UnderworldExpansion.hasTokens(this.player.game)) {
+          return this.next();
+        }
         const token = UnderworldExpansion.drawExcavationToken(this.player.game);
         this.collection.push(token);
         this.player.game.log('${0} identified ${1} from the draw pile', (b) => b.player(this.player).undergroundToken(token));

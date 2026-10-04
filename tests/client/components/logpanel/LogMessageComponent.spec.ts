@@ -7,6 +7,8 @@ import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageType} from '@/common/logs/LogMessageType';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {CardName} from '@/common/cards/CardName';
+import {SpaceModel} from '@/common/models/SpaceModel';
+import {SpaceType} from '@/common/boards/SpaceType';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 
 describe('LogMessageComponent', () => {
@@ -19,6 +21,23 @@ describe('LogMessageComponent', () => {
       },
     });
     expect(wrapper.exists()).to.be.true;
+  });
+
+  it('renders SPACE type with the coordinate of the space on this game\'s board', () => {
+    const message = new LogMessage(LogMessageType.DEFAULT, '${0}', [
+      {type: LogMessageDataType.SPACE, value: '08'},
+    ]);
+    const viewModel = fakeViewModel();
+    // The top two rows of a map whose top row holds six spaces, so '08' ends row A.
+    viewModel.game.spaces = [
+      ...['03', '04', '05', '06', '07', '08'].map((id, idx) => ({id, x: 5 + idx, y: 0, spaceType: SpaceType.LAND, bonus: []})),
+      {id: '09', x: 0, y: 10, spaceType: SpaceType.LAND, bonus: []},
+    ] as Array<SpaceModel>;
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {message, viewModel},
+    });
+    expect(wrapper.find('.log-space-id').text()).to.equal('A6');
   });
 
   it('renders CARD type as a single card span', () => {

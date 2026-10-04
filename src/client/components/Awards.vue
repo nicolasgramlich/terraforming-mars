@@ -49,7 +49,8 @@
 <script lang="ts">
 import {defineComponent} from 'vue';
 import Award from '@/client/components/Award.vue';
-import {AWARD_COSTS} from '@/common/constants';
+import {BoardName} from '@/common/boards/BoardName';
+import {getMilestoneAwardLimits} from '@/common/boards/MilestoneAwardLimits';
 import {FundedAwardModel} from '@/common/models/FundedAwardModel';
 import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 
@@ -60,6 +61,11 @@ export default defineComponent({
     awards: {
       type: Array as () => ReadonlyArray<FundedAwardModel>,
       required: true,
+    },
+    // The map decides how many awards may be funded, and at what cost.
+    boardName: {
+      type: String as () => BoardName,
+      default: BoardName.THARSIS,
     },
     showScores: {
       type: Boolean,
@@ -92,7 +98,7 @@ export default defineComponent({
       return this.awards.filter(isFunded);
     },
     availableAwardSpots(): number[] {
-      return AWARD_COSTS.slice(this.fundedAwards.length);
+      return getMilestoneAwardLimits(this.boardName).awardCosts.slice(this.fundedAwards.length);
     },
     isLearnerModeOn(): boolean {
       return this.preferences.learner_mode;

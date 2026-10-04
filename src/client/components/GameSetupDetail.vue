@@ -96,6 +96,7 @@ const boardColorClass: Record<BoardName, string> = {
   [BoardName.TERRA_CIMMERIA_NOVA]: 'game-config board-terra_cimmeria_nova map',
   [BoardName.AMAZONIS]: 'game-config board-amazonis map',
   [BoardName.AMAZONIS_PLANITIA]: 'game-config board-amazonis_planitia map',
+  [BoardName.GIGA]: 'game-config board-giga map',
   [BoardName.ARABIA_TERRA]: 'game-config board-arabia_terra map',
   [BoardName.VASTITAS_BOREALIS]: 'game-config board-vastitas_borealis map',
   [BoardName.TERRA_CIMMERIA]: 'game-config board-terra_cimmeria map',

@@ -21,6 +21,9 @@ export type Space = {
   /** When true, this is a volcanic space. */
   volcanic?: boolean;
 
+  /** When true, this space is in a polar region (marked with a snowflake on the map). */
+  polar?: boolean;
+
   /** The tile placed on top of the space. Could be a hazard tile. */
   tile?: Tile;
   /** The player who owns this tile. Will show a token, even the neutral player */

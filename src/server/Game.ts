@@ -1,7 +1,8 @@
 import * as constants from '../common/constants';
 import {BeginnerCorporation} from './cards/corporation/BeginnerCorporation';
 import {Board, migrateColonySpaceId} from './boards/Board';
-import {GlobalParameterMaximums, getGlobalParameterMaximums} from '../common/boards/GlobalParameterMaximums';
+import {MilestoneAwardLimits, getMilestoneAwardLimits} from '../common/boards/MilestoneAwardLimits';
+import {GlobalParameterMaximums, GlobalParameterSteps, getGlobalParameterMaximums, getGlobalParameterSteps} from '../common/boards/GlobalParameterMaximums';
 import {GlobalParameterThreshold, GlobalParameterTracks, getGlobalParameterTracks} from '../common/boards/GlobalParameterTracks';
 import {CardName} from '../common/cards/CardName';
 import {ClaimedMilestone, serializeClaimedMilestones, deserializeClaimedMilestones} from './milestones/ClaimedMilestone';
@@ -633,8 +634,13 @@ export class Game implements IGame, Logger {
     return this.generation <= this.lastSoloGeneration();
   }
 
+  public get milestoneAwardLimits(): MilestoneAwardLimits {
+    return getMilestoneAwardLimits(this.gameOptions.boardName);
+  }
+
   public getAwardFundingCost(): number {
-    return 8 + (6 * this.fundedAwards.length);
+    const funded = this.fundedAwards.length;
+    return this.milestoneAwardLimits.awardCosts[funded] ?? 8 + (6 * funded);
   }
 
   public fundAward(player: IPlayer, award: IAward): void {
@@ -665,7 +671,7 @@ export class Game implements IGame, Logger {
       return true;
     }
 
-    return this.fundedAwards.length >= constants.MAX_AWARDS;
+    return this.fundedAwards.length >= this.milestoneAwardLimits.awardCosts.length;
   }
 
   public allMilestonesClaimed(): boolean {
@@ -674,7 +680,7 @@ export class Game implements IGame, Logger {
       return true;
     }
 
-    return this.claimedMilestones.length >= constants.MAX_MILESTONES;
+    return this.claimedMilestones.length >= this.milestoneAwardLimits.milestones;
   }
 
   private playerHasPickedCorporationCard(player: IPlayer, corporationCard: ICorporationCard): void {
@@ -1194,15 +1200,17 @@ export class Game implements IGame, Logger {
       return undefined;
     }
 
+    const stepSize = this.globalParameterSteps.oxygen;
+
     // PoliticalAgendas Reds P3 && Magnetic Field Stimulation Delays hook
     if (increments < 0) {
-      this.oxygenLevel = Math.max(constants.MIN_OXYGEN_LEVEL, this.oxygenLevel + increments);
+      this.oxygenLevel = Math.max(constants.MIN_OXYGEN_LEVEL, this.oxygenLevel + increments * stepSize);
       return undefined;
     }
 
     // Literal typing makes |increments| a const
-    const steps = Math.min(increments, this.globalParameterMaximums.oxygen - this.oxygenLevel);
-    const newOxygenLevel = this.oxygenLevel + steps;
+    const steps = Math.min(increments, (this.globalParameterMaximums.oxygen - this.oxygenLevel) / stepSize);
+    const newOxygenLevel = this.oxygenLevel + steps * stepSize;
 
     if (this.phase !== Phase.SOLAR) {
       TurmoilHandler.onGlobalParameterIncrease(player, GlobalParameter.OXYGEN, steps);
@@ -1291,14 +1299,16 @@ export class Game implements IGame, Logger {
       return undefined;
     }
 
+    const stepSize = this.globalParameterSteps.temperature;
+
     if (increments === -2 || increments === -1) {
-      this.temperature = Math.max(constants.MIN_TEMPERATURE, this.temperature + increments * 2);
+      this.temperature = Math.max(constants.MIN_TEMPERATURE, this.temperature + increments * stepSize);
       return undefined;
     }
 
     // Literal typing makes |increments| a const
-    const steps = Math.min(increments, (this.globalParameterMaximums.temperature - this.temperature) / 2);
-    const newTemperature = this.temperature + steps * 2;
+    const steps = Math.min(increments, (this.globalParameterMaximums.temperature - this.temperature) / stepSize);
+    const newTemperature = this.temperature + steps * stepSize;
 
     // Track bonuses (heat/plant production, an ocean at 0C, ...) vary per map. The player's own
     // bonuses come before the card effects; the global ones (the ocean) come after the TR increase.
@@ -1330,6 +1340,10 @@ export class Game implements IGame, Logger {
 
   public get globalParameterMaximums(): GlobalParameterMaximums {
     return getGlobalParameterMaximums(this.gameOptions.boardName);
+  }
+
+  public get globalParameterSteps(): GlobalParameterSteps {
+    return getGlobalParameterSteps(this.gameOptions.boardName);
   }
 
   public get globalParameterTracks(): GlobalParameterTracks {
@@ -1530,9 +1544,11 @@ export class Game implements IGame, Logger {
       player.stock.add(Resource.HEAT, count, {log: true});
       break;
     case SpaceBonus.OCEAN:
-      // Hellas special requirements ocean tile
+    case SpaceBonus.OCEAN_5MC:
+      // Hellas special requirements ocean tile (and Giga's, which costs less)
       if (this.canAddOcean()) {
-        this.defer(new SelectPaymentDeferred(player, constants.HELLAS_BONUS_OCEAN_COST, {title: 'Select how to pay for placement bonus ocean'}))
+        const cost = spaceBonus === SpaceBonus.OCEAN ? constants.HELLAS_BONUS_OCEAN_COST : constants.GIGA_BONUS_OCEAN_COST;
+        this.defer(new SelectPaymentDeferred(player, cost, {title: 'Select how to pay for placement bonus ocean'}))
           .andThen(() => {
             this.defer(new PlaceOceanTile(player, {title: 'Select space for ocean from placement bonus'}));
             return undefined;

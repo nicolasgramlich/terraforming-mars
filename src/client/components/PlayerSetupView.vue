@@ -54,8 +54,8 @@
     <DynamicTitle title="Game details" :color="thisPlayer.color"/>
 
     <div class="player_home_block" v-if="playerView.players.length > 1">
-      <Milestones :showScores="false" :milestones="game.milestones" />
-      <Awards :show-scores="false" :awards="game.awards" />
+      <Milestones :showScores="false" :milestones="game.milestones" :boardName="game.gameOptions.boardName" />
+      <Awards :show-scores="false" :awards="game.awards" :boardName="game.gameOptions.boardName" />
     </div>
 
     <div class="player_home_block player_home_block--turnorder nofloat" v-if="playerView.players.length>1">

@@ -34,6 +34,8 @@ import {RequirementType} from '@/common/cards/RequirementType';
 import {range} from '@/common/utils/utils';
 import CardParty from '@/client/components/card/CardParty.vue';
 import {PartyName} from '@/common/turmoil/PartyName';
+import {BoardName} from '@/common/boards/BoardName';
+import {getOceanRequirementMultiplier} from '@/common/boards/GlobalParameterMaximums';
 
 export default defineComponent({
   name: 'CardRequirementComponent',
@@ -48,6 +50,10 @@ export default defineComponent({
       default: true,
     },
   },
+  // The game's map, provided by the in-game views. Outside a game (e.g. the card list) there is none.
+  inject: {
+    boardName: {from: 'boardName', default: undefined},
+  },
   components: {
     CardParty,
   },
@@ -56,7 +62,13 @@ export default defineComponent({
       return requirementType(this.requirement);
     },
     count(): number {
-      return this.requirement.count ?? 0;
+      const count = this.requirement.count ?? 0;
+      // Some maps scale ocean requirements; show what the game will enforce.
+      const boardName = this.boardName as BoardName | undefined;
+      if (this.type === RequirementType.OCEANS && boardName !== undefined) {
+        return count * getOceanRequirementMultiplier(boardName);
+      }
+      return count;
     },
     amount(): string | number {
       switch (this.type) {
@@ -185,7 +197,7 @@ export default defineComponent({
       if (!this.isRepeated || this.requirement.count === undefined) {
         return [1];
       }
-      return range(this.requirement.count);
+      return range(this.count);
     },
     nextTo(): string {
       if (this.requirement.nextTo) {

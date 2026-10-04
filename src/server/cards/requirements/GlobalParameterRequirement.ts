@@ -14,7 +14,10 @@ import {CardResource} from '../../../common/CardResource';
  * Pathfinders card Think Tank adds most of the complexity.
  */
 export abstract class GlobalParameterRequirement extends InequalityRequirement {
-  protected scale: number = 1;
+  /** How far one step moves this parameter. Requirement bonuses are counted in steps. */
+  protected scale(_player: IPlayer): number {
+    return 1;
+  }
   protected abstract parameter: GlobalParameter;
 
   public abstract getGlobalValue(player: IPlayer): number;
@@ -47,7 +50,7 @@ export abstract class GlobalParameterRequirement extends InequalityRequirement {
   }
 
   public getScore(player: IPlayer): number {
-    const playerRequirementsBonus = player.getGlobalParameterRequirementBonus(this.parameter) * this.scale;
+    const playerRequirementsBonus = player.getGlobalParameterRequirementBonus(this.parameter) * this.scale(player);
 
     const level = this.getGlobalValue(player);
 
@@ -59,6 +62,6 @@ export abstract class GlobalParameterRequirement extends InequalityRequirement {
   }
 
   public distance(player: IPlayer): number {
-    return Math.floor(Math.abs(this.getScore(player) - this.count) / this.scale);
+    return Math.floor(Math.abs(this.getScore(player) - this.threshold(player)) / this.scale(player));
   }
 }

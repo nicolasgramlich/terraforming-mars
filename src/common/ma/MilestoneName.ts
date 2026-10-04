@@ -100,6 +100,12 @@ export const milestoneNames = [
   'Thawer',
   'Trader',
   'Tycoon10',
+
+  // Giga
+  'Gardener5',
+  'Mayor5',
+  'Rim Settler5',
+  'Polar Explorer5',
 ] as const;
 
 export type MilestoneName = typeof milestoneNames[number];

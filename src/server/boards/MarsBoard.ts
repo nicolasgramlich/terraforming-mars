@@ -203,6 +203,11 @@ export class MarsBoard extends Board {
         return false;
       }
     }
+    if (space.bonus.includes(SpaceBonus.OCEAN_5MC) && game.canAddOcean()) {
+      if (!player.canAfford({cost: constants.GIGA_BONUS_OCEAN_COST, tr: {oceans: 1}})) {
+        return false;
+      }
+    }
     if (space.bonus.includes(SpaceBonus.TEMPERATURE) && game.getTemperature() < game.globalParameterMaximums.temperature) {
       if (!player.canAfford({cost: constants.VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST, tr: {temperature: 1}})) {
         return false;
@@ -232,27 +237,9 @@ export class MarsBoard extends Board {
   }
 
   private computeEdges(): ReadonlyArray<Space> {
-    // The middle (widest) row is at y === maxY / 2. The hexagon's right column is straight at
-    // x === maxX, the top and bottom rows are y === 0 and y === maxY, and the two left diagonals
-    // are described by x + y and y - x both equalling the middle row index.
-    const middleRow = this.equatorRow;
+    // A space on the edge of the map has fewer than six neighbours, whatever the map's shape.
     return this.spaces.filter((space) => {
-      if (space.spaceType === SpaceType.COLONY) {
-        return false;
-      }
-      if (space.y === 0 || space.y === this.maxY || space.x === this.maxX) {
-        return true;
-      }
-      // left side is tricky.
-      // top-left is easy with math. Look at the map.
-      if (space.y + space.x === middleRow) {
-        return true;
-      }
-      // bottom-left is also easy with math. Look at the map.
-      if (space.y - space.x === middleRow) {
-        return true;
-      }
-      return false;
+      return space.spaceType !== SpaceType.COLONY && this.getAdjacentSpaces(space).length < 6;
     });
   }
 

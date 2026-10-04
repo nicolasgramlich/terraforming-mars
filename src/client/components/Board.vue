@@ -20,7 +20,7 @@
           <BoardSpace v-if="hasSpace(SpaceName.VENERA_BASE)" :space="getSpace(SpaceName.VENERA_BASE)" text="Venera Base" :tileView="tileView"/>
         </div>
 
-        <div class="global-numbers" :class="{'global-numbers--large': isLargeBoard}">
+        <div class="global-numbers" :class="{'global-numbers--large': isLargeBoard, 'global-numbers--giga': isGigaBoard}">
             <div class="global-numbers-temperature">
                 <div :class="getScaleCSS(lvl)" v-for="(lvl, idx) in getValuesForParameter('temperature')" :key="idx">{{ lvl.strValue }}</div>
             </div>
@@ -73,7 +73,7 @@
             </div>
         </div>
 
-        <div class="board" :class="{'board--large': isLargeBoard}" id="main_board">
+        <div class="board" :class="{'board--large': isLargeBoard, 'board--giga': isGigaBoard}" id="main_board">
             <BoardSpace
               v-for="curSpace in getAllSpacesOnMars()"
               :key="curSpace.id"
@@ -355,7 +355,7 @@
 <script lang="ts">
 import {defineComponent} from 'vue';
 import * as constants from '@/common/constants';
-import {getGlobalParameterMaximums} from '@/common/boards/GlobalParameterMaximums';
+import {getGlobalParameterMaximums, getGlobalParameterSteps} from '@/common/boards/GlobalParameterMaximums';
 import {marsTileLabel} from '@/common/boards/spaces';
 import BoardSpace from '@/client/components/BoardSpace.vue';
 import {AresData} from '@/common/ares/AresData';
@@ -441,13 +441,16 @@ export default defineComponent({
       const geometry = this.marsGeometry;
       const indexInRow = space.x - (geometry.minXByRow[space.y] ?? 0);
       const top = 34 + 41 * space.y;
-      const left = 6 + Math.round(24.5 * Math.abs(space.y - geometry.middleRow)) + 49 * indexInRow;
+      // Rows are centred: a row is inset by half a tile for each tile it is short of the widest row.
+      const inset = geometry.widestRow - (geometry.tilesByRow[space.y] ?? geometry.widestRow);
+      const left = 6 + Math.round(24.5 * inset) + 49 * indexInRow;
       return {margin: `${top}px 0 0 ${left}px`};
     },
     // Coordinate label (e.g. 'A1') for the "coords" tile view, computed from the space's position
     // so every on-Mars space is labelled on any board size.
     marsSpaceCoords(space: SpaceModel): string {
-      return marsTileLabel(space.x, space.y, this.marsGeometry.middleRow);
+      const geometry = this.marsGeometry;
+      return marsTileLabel(space.x, space.y, geometry.middleRow, geometry.minXByRow[space.y]);
     },
     hasSpace(spaceId: SpaceId): boolean {
       return this.spaceMap.has(spaceId);
@@ -474,13 +477,13 @@ export default defineComponent({
       case 'oxygen':
         startValue = constants.MIN_OXYGEN_LEVEL;
         endValue = this.globalParameterMaximums.oxygen;
-        step = 1;
+        step = this.globalParameterSteps.oxygen;
         curValue = this.oxygen_level;
         break;
       case 'temperature':
         startValue = constants.MIN_TEMPERATURE;
         endValue = this.globalParameterMaximums.temperature;
-        step = 2;
+        step = this.globalParameterSteps.temperature;
         curValue = this.temperature;
         break;
       case 'venus':
@@ -519,6 +522,9 @@ export default defineComponent({
     },
     getGameBoardClassName(): string {
       const css = this.expansions.venus ? 'board-cont board-with-venus' : 'board-cont board-without-venus';
+      if (this.isGigaBoard) {
+        return css + ' board-cont--giga';
+      }
       return this.isLargeBoard ? css + ' board-cont--large' : css;
     },
   },
@@ -530,23 +536,32 @@ export default defineComponent({
     // Derived from the spaces themselves so it works for any symmetric hex map. `middleRow` is the
     // widest row (y === maxY / 2); `minXByRow` is the smallest x in each row, used to find a tile's
     // index within its row.
-    marsGeometry(): {middleRow: number, minXByRow: Record<number, number>} {
+    marsGeometry(): {middleRow: number, minXByRow: Record<number, number>, tilesByRow: Record<number, number>, widestRow: number} {
       const minXByRow: Record<number, number> = {};
+      const tilesByRow: Record<number, number> = {};
       let maxY = 0;
       for (const space of this.spaces) {
         if (space.spaceType === SpaceType.COLONY || space.x < 0) {
           continue;
         }
         maxY = Math.max(maxY, space.y);
+        tilesByRow[space.y] = (tilesByRow[space.y] ?? 0) + 1;
         if (minXByRow[space.y] === undefined || space.x < minXByRow[space.y]) {
           minXByRow[space.y] = space.x;
         }
       }
-      return {middleRow: maxY / 2, minXByRow};
+      return {middleRow: maxY / 2, minXByRow, tilesByRow, widestRow: Math.max(0, ...Object.values(tilesByRow))};
     },
     // The larger maps (more than the standard nine rows) need a bigger board container.
     isLargeBoard(): boolean {
-      return this.marsGeometry.middleRow > 4;
+      return this.marsGeometry.middleRow > 4 && !this.isGigaBoard;
+    },
+    // Giga is an oval, wider than it is tall, with its own layout and straight parameter tracks.
+    isGigaBoard(): boolean {
+      return this.boardName === BoardName.GIGA;
+    },
+    globalParameterSteps() {
+      return getGlobalParameterSteps(this.boardName);
     },
     BoardName(): typeof BoardName {
       return BoardName;

@@ -30,6 +30,7 @@ const css: Record<SpaceBonus, string> = {
   [SpaceBonus._RESTRICTED]: '', // RESTRICTED is just a that a space is empty, not an actual bonus.
   [SpaceBonus.TEMPERATURE_4MC]: 'bonustemperature4mc',
   [SpaceBonus.WILD]: 'wild',
+  [SpaceBonus.OCEAN_5MC]: 'bonusocean5mc',
 };
 
 export default defineComponent({
@@ -44,6 +45,7 @@ export default defineComponent({
     getClass(idx: number, bonus: SpaceBonus): string {
       const doubleWideBonuses = [
         SpaceBonus.OCEAN,
+        SpaceBonus.OCEAN_5MC,
         SpaceBonus.TEMPERATURE,
         SpaceBonus.TEMPERATURE_4MC,
         SpaceBonus.COLONY,

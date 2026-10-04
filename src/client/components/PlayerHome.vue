@@ -202,6 +202,10 @@ const typeToDataModel: Record<ToggleableCardType, {key: Exclude<keyof PlayerHome
 export default defineComponent({
   name: 'PlayerHome',
   mixins: [HomeMixin],
+  // Lets card components show requirements as this game's map enforces them.
+  provide() {
+    return {boardName: this.playerView.game.gameOptions.boardName};
+  },
   data(): PlayerHomeModel {
     const preferences = getPreferences();
     return {

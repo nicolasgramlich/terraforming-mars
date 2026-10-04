@@ -4,6 +4,7 @@ import {MAX_OCEAN_TILES} from '../../../common/constants';
 import {GlobalParameter} from '../../../common/GlobalParameter';
 import {RequirementType} from '../../../common/cards/RequirementType';
 import {Options} from './CardRequirement';
+import {getOceanRequirementMultiplier} from '../../../common/boards/GlobalParameterMaximums';
 
 /**
  * Evaluate whether the game's ocean tile count is at least (or at most) a given value.
@@ -18,6 +19,10 @@ export class OceanRequirement extends GlobalParameterRequirement {
       throw new Error('Ocean tiles must be above 0 and below ' + MAX_OCEAN_TILES);
     }
     super(options);
+  }
+
+  public override threshold(player: IPlayer): number {
+    return this.count * getOceanRequirementMultiplier(player.game.gameOptions.boardName);
   }
 
   public getGlobalValue(player: IPlayer) {

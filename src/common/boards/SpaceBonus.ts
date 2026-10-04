@@ -36,6 +36,8 @@ export enum SpaceBonus {
 
     // Amazonis Planitia-specific: the player chooses any one standard resource.
     WILD, // 19
+
+    OCEAN_5MC, // 20, Giga-specific, costs 5MC not 6
 }
 
 const TO_STRING_MAP = {
@@ -58,6 +60,7 @@ const TO_STRING_MAP = {
   [SpaceBonus.DELEGATE]: 'Delegate',
   [SpaceBonus.COLONY]: 'Colony',
   [SpaceBonus.TEMPERATURE_4MC]: 'Temperature',
+  [SpaceBonus.OCEAN_5MC]: 'Ocean',
   [SpaceBonus.WILD]: 'Any resource',
 } satisfies Record<SpaceBonus, string>;
 

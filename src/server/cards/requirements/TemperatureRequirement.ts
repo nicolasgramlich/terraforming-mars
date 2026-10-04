@@ -11,7 +11,9 @@ import {Options} from './CardRequirement';
 export class TemperatureRequirement extends GlobalParameterRequirement {
   public readonly type = RequirementType.TEMPERATURE;
   protected readonly parameter = GlobalParameter.TEMPERATURE;
-  protected override readonly scale = 2;
+  protected override scale(player: IPlayer): number {
+    return player.game.globalParameterSteps.temperature;
+  }
 
   constructor(options?: Partial<Options>) {
     const count = options?.count ?? 1;

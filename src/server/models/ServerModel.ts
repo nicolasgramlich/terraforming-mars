@@ -28,7 +28,6 @@ import {SpaceId} from '../../common/Types';
 import {cardsToModel, coloniesToModel} from './ModelUtils';
 import {runId} from '../utils/server-ids';
 import {toName} from '../../common/utils/utils';
-import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 
 export class Server {
   public static getSimpleGameModel(game: IGame): SimpleGameModel {
@@ -165,7 +164,7 @@ export class Server {
         (m) => m.milestone.name === milestone.name,
       );
       let scores: Array<MilestoneScore> = [];
-      if (claimed === undefined && claimedMilestones.length < MAX_MILESTONES) {
+      if (claimed === undefined && claimedMilestones.length < game.milestoneAwardLimits.milestones) {
         scores = game.players.map((player) => ({
           color: player.color,
           score: milestone.getScore(player),
@@ -192,7 +191,7 @@ export class Server {
       const funded = fundedAwards.find((a) => a.award.name === award.name);
       const scorer = new AwardScorer(game, award);
       let scores: Array<AwardScore> = [];
-      if (fundedAwards.length < MAX_AWARDS || funded !== undefined) {
+      if (fundedAwards.length < game.milestoneAwardLimits.awardCosts.length || funded !== undefined) {
         scores = game.players.map((player) => ({
           color: player.color,
           score: scorer.get(player),
@@ -379,6 +378,8 @@ export class Server {
         highlight = 'volcanic';
       } else if (noctisCitySpaceId === space.id) {
         highlight = 'noctis';
+      } else if (space.polar) {
+        highlight = 'polar';
       }
 
       const model: SpaceModel = {

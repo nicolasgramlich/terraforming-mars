@@ -23,10 +23,10 @@ export class ShiftAresGlobalParametersDeferred extends DeferredAction {
             hazardData.removeDustStormsOceanCount.threshold += response.highOceanDelta;
           }
           if (hazardData.severeErosionTemperature.available) {
-            hazardData.severeErosionTemperature.threshold += (response.temperatureDelta * 2);
+            hazardData.severeErosionTemperature.threshold += (response.temperatureDelta * this.player.game.globalParameterSteps.temperature);
           }
           if (hazardData.severeDustStormOxygen.available) {
-            hazardData.severeDustStormOxygen.threshold += response.oxygenDelta;
+            hazardData.severeDustStormOxygen.threshold += (response.oxygenDelta * this.player.game.globalParameterSteps.oxygen);
           }
 
           // Basically the order is irrelevant, but evaluating the severe erosions
